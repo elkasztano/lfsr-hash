@@ -7,11 +7,11 @@ The lfsrs in turn are used to create the hash value.
 Compiling is pretty straight forward, as no external libraries are used.  
 Example using gcc: `gcc -o lfsr-hash lfsr-hash.c`  
 ## usage
-Provided lfsr-hash is in your $PATH, you can use the following commands:
+Provided lfsr-hash is in your $PATH, you can use one of the following commands:
 
 `cat yourfile | lfsr-hash -n 32` or `lfsr-hash -n 32 < yourfile`  
 
-The above commands will result in a 256 bit hash value in hexadecimal output format.
+The above commands will each result in a 256 bit hash value in hexadecimal output format.
 
 Adding the option `-c` will result in a color pattern in your terminal, (almost) unique to your file.  
 
