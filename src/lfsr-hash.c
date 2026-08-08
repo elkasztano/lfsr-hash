@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "cli.h"
 
 // declare array for 128 bit lfsr state
 static uint64_t state128[2];
@@ -15,21 +16,21 @@ static uint64_t state127[2];
 static uint64_t state126[2];
 
 // 128 bit galois lfsr with taps at 128, 127, 126, 121
-int lfsr128(void)
+void lfsr128(void)
 {
 	state128[0] = state128[0] >> 1 | state128[1] << 63;
 	state128[1] = (-(state128[0] & 1ULL) & 0xe100000000000000ULL) ^ (state128[1] >> 1);
 }
 
 // 127 bit galois lfsr with taps at 127, 126, 124, 120
-int lfsr127(void)
+void lfsr127(void)
 {
 	state127[0] = (state127[0] >> 1) | (state127[1] << 63);
 	state127[1] = (-(state127[0] & 1ULL) & 0x6880000000000000ULL) ^ (state127[1] >> 1);
 }
 
 // 126 bit galois lfsr with taps at 126, 124, 122, 119
-int lfsr126(void)
+void lfsr126(void)
 {
 	state126[0] = (state126[0] >> 1) | (state126[1] << 63);
 	state126[1] = (-(state126[0] & 1ULL) & 0x2a40000000000000ULL) ^ (state126[1] >> 1);
@@ -37,33 +38,10 @@ int lfsr126(void)
 
 int main(int argc, char *argv[])
 {
-	int opt;
-	int count=0;
-	int n=8; // default output length: 8 bytes = 64 bits
-	uint8_t col = 0;
-
-	// get command line arguments
-	while((opt = getopt(argc, argv, ":hcn:")) != -1)
-	{
-		switch(opt)
-		{
-			case 'h':
-				printf("usage: asg_hash [options]\n options:\n\t-h\tshow help and quit\n\t-n output length in bytes (must be a positive integer)\n\t-c\toutput color pattern\n");
-				return 0;
-			case 'n':
-				n = atoi(optarg);				
-				break;
-			case 'c':
-				col = 1;
-				break;
-			case ':':
-				printf("option needs a value\n");
-				return 1;
-			case '?':
-				printf("unknown option: %c\n", optopt);
-				return 1;
-		}
-	}
+	lh_cli_t cli = lh_cli(argc, argv);
+	int count = 0;
+	int n = cli.n;
+	uint8_t col = cli.flags & LH_FLAGS_COLOR;
 
 	// define lfsr start states, can be anything except zero
 	state128[0] = 0x7fe1105ab10c5e4fULL;
@@ -76,7 +54,7 @@ int main(int argc, char *argv[])
 	state126[1] = 0x159AABE3C6C72865ULL;
 
 	int d;
-	char c, temp;
+	char c;
 
 	// perform XOR-operation repeatedly on the above defined start states using bytes from stdin
 	while ((d = fgetc(stdin)) != EOF)
